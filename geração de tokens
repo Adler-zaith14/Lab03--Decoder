@@ -1,0 +1,23 @@
+vocab_size = 20
+idx2token = {i: f"token_{i}" for i in range(vocab_size)}
+idx2token[vocab_size - 1] = "<EOS>"
+
+def next_token(ctx, enc_memory):
+    logits = np.random.randn(vocab_size)
+    return softmax(logits)
+
+np.random.seed(42)
+ctx = ["<START>", "O", "rato"]
+enc_memory = enc_out
+max_tokens = 15
+
+while True:
+    probs = next_token(ctx, enc_memory)
+    idx = np.argmax(probs)
+    token = idx2token[idx]
+    ctx.append(token)
+
+    if token == "<EOS>" or len(ctx) >= max_tokens:
+        break
+
+print(" ".join(ctx))
