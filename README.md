@@ -1,12 +1,13 @@
-# LAB P1-03: Decoder do Transformer
-**Disciplina:** Tópicos em Inteligência Artificial  
-**Instituição:** ICEV  
-**Autor:** Adler Castro Alves  
+# LAB P1-03: Implementando o Decoder
+**Disciplina:** Tópicos em Inteligência Artificial – 2026.1
+**Professor:** Prof. Dimmy Magalhães
+**Instituição:** iCEV - Instituto de Ensino Superior
+**Autor:** Adler Castro Alves
 
 ---
 
 ## Objetivo
-Implementação from scratch do Decoder do Transformer conforme o paper "Attention Is All You Need" (Vaswani et al., 2017), utilizando apenas NumPy e Pandas. O laboratório cobre os três mecanismos centrais do Decoder: máscara causal (Look-Ahead Mask), cross-attention entre Encoder e Decoder, e o loop de inferência auto-regressiva.
+Implementação from scratch dos blocos matemáticos centrais do Decoder do Transformer, utilizando apenas NumPy e Pandas. O lab cobre mascaramento causal, cross-attention entre Encoder e Decoder, e o loop de inferência auto-regressiva.
 
 ```
 Attention(Q, K, V) = softmax(QK^T / √d_k + M) V
@@ -31,66 +32,34 @@ python decoder.py
 
 ---
 
-## Máscara Causal
-Durante o treinamento paralelo em GPU, a frase inteira entra no Decoder de uma vez. Para impedir que o token na posição `i` atenda à posição `i+1`, injetamos uma máscara triangular superior com `-inf` antes do softmax. O softmax transforma `-inf` em exatamente `0.0` — a posição some da atenção.
+## O que foi implementado
 
-```python
-def causal_mask(seq_len):
-    m = np.full((seq_len, seq_len), -np.inf)
-    return np.triu(m, k=1)
+**Tarefa 1 — Máscara Causal (Look-Ahead Mask)**
+
+Função `causal_mask(seq_len)` que retorna uma matriz quadrada com `-inf` no triângulo superior. Quando somada aos scores antes do softmax, as posições futuras viram exatamente `0.0` — o token na posição `i` só enxerga até `i`.
+
+Prova real: multipliquei Q e K fictícios, apliquei a máscara e o softmax, e imprimi a matriz de probabilidades confirmando que tudo acima da diagonal zerou.
+
+**Tarefa 2 — Cross-Attention**
+
+Função `cross_attention(enc_out, dec_state)` onde:
+- Q vem do `decoder_state` — o que já foi gerado
+- K e V vêm do `encoder_output` — a frase original
+
+O Decoder pode olhar a frase do Encoder por completo, sem máscara. Tensores simulados: `enc_out (1, 10, 512)` e `dec_state (1, 4, 512)`.
+
+**Tarefa 3 — Loop Auto-Regressivo**
+
+Função mock `next_token(ctx, enc_memory)` que devolve um vetor de probabilidades sobre o vocabulário. O loop while chama ela a cada passo, aplica `argmax`, faz append do token escolhido na lista de contexto e para quando sai `<EOS>` ou atinge o limite.
+
+```
+<START> O rato token_6 token_11 token_7 token_13 token_2 token_13 token_5 token_16 <EOS>
 ```
 
 ---
 
-## Exemplo de Input e Output
-
-```python
-# Tarefa 1 — Máscara Causal
-Q = np.random.randn(5, 64)
-K = np.random.randn(5, 64)
-scores = Q @ K.T + causal_mask(5)
-probs = softmax(scores)
-
-# Tarefa 2 — Cross-Attention
-enc_out   = np.random.randn(1, 10, 512)
-dec_state = np.random.randn(1,  4, 512)
-out = cross_attention(enc_out, dec_state)
-
-# Tarefa 3 — Loop Auto-Regressivo
-ctx = ["<START>", "O", "rato"]
-while True:
-    probs = next_token(ctx, enc_out)
-    token = idx2token[np.argmax(probs)]
-    ctx.append(token)
-    if token == "<EOS>" or len(ctx) >= max_tokens:
-        break
-```
-
-**Inputs:**
-```
-Q, K:      (5, 64)        — scores da máscara causal
-enc_out:   (1, 10, 512)   — saída do encoder
-dec_state: (1,  4, 512)   — estado atual do decoder
-```
-
-**Outputs:**
-```
-probs:  (5, 5)   — linha i só enxerga posições <= i
-out:    (1, 4, 512)
-frase:  <START> O rato token_6 token_11 ... <EOS>
-```
-
----
-
-## Diferença entre Self-Attention e Cross-Attention
-
-| | Self-Attention | Cross-Attention |
-|---|---|---|
-| Q | própria sequência | estado do Decoder |
-| K, V | própria sequência | saída do Encoder |
-| Máscara | sim (causal) | não |
-
-Na cross-attention o Decoder tem permissão para olhar a frase original do Encoder por completo — sem restrição de posição.
+## Nota de Crédito
+O Claude foi consultado para tirar dúvidas de sintaxe do numpy e para revisão de estilo do código. A implementação foi feita manualmente.
 
 **Anexo Google Colab:**
 [https://colab.research.google.com/drive/1WAJ3ZHLuqVxDHQtS_pNq6OVOOkBWVuWH?usp=sharing]
