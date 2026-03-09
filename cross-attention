@@ -1,0 +1,19 @@
+enc_out = np.random.randn(1, 10, 512)
+dec_state = np.random.randn(1, 4, 512)
+
+def cross_attention(enc, dec):
+    d = dec.shape[-1]
+
+    Wq = np.random.randn(d, d)
+    Wk = np.random.randn(d, d)
+    Wv = np.random.randn(d, d)
+
+    Q = dec @ Wq
+    K = enc @ Wk
+    V = enc @ Wv
+
+    scores = (Q @ K.transpose(0, 2, 1)) / np.sqrt(d)
+    return softmax(scores) @ V
+
+out = cross_attention(enc_out, dec_state)
+print(out.shape)  
