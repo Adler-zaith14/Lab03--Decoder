@@ -1,0 +1,10 @@
+import numpy as np
+import pandas as pd
+
+def causal_mask(seq_len):
+    m = np.full((seq_len, seq_len), -np.inf)
+    return np.triu(m, k=1)
+
+def softmax(x):
+    e = np.exp(x - x.max(axis=-1, keepdims=True))
+    return e / e.sum(axis=-1, keepdims=True)
