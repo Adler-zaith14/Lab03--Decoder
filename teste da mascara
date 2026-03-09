@@ -1,0 +1,11 @@
+seq_len = 5
+np.random.seed(42)
+
+Q = np.random.randn(seq_len, 64)
+K = np.random.randn(seq_len, 64)
+scores = Q @ K.T
+scores_mascarados = scores + causal_mask(seq_len)
+probs = softmax(scores_mascarados)
+
+
+print(pd.DataFrame(probs).round(2))
