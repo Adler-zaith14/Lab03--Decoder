@@ -58,8 +58,6 @@ Função mock `next_token(ctx, enc_memory)` que devolve um vetor de probabilidad
 
 ---
 
-## Nota de Crédito
-O Claude foi consultado para tirar dúvidas de sintaxe do numpy e para revisão de estilo do código. A implementação foi feita manualmente.
 
 **Anexo Google Colab:**
 [https://colab.research.google.com/drive/1WAJ3ZHLuqVxDHQtS_pNq6OVOOkBWVuWH?usp=sharing]
